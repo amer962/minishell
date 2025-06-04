@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   expander.c                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nqasem <nqasem@student.42.fr>              +#+  +:+       +#+        */
+/*   By: aalquraa <aalquraa@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/12 10:37:56 by aalquraa          #+#    #+#             */
-/*   Updated: 2025/05/29 14:32:52 by nqasem           ###   ########.fr       */
+/*   Updated: 2025/06/04 19:53:20 by aalquraa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,60 +56,45 @@ static char	*expantions(char *input, int *i, t_cmd *cmd)
 	return (value);
 }
 
-int	append_expansion(char **expanded, char *content, int *i, t_cmd *cmd)
+char *expander_input(char *input, char **env)
 {
-	char	*expand_var;
-
-	expand_var = expantions(content, i, cmd);
-	if (!expand_var)
-		return (-1);
-	*expanded = ft_strjoin_free(*expanded, expand_var);
-	free(expand_var);
-	if (!*expanded)
-		return (-1);
-	return (0);
-}
-
-static int	handle_quotes_and_expand(
-	char **expanded, char *content, int *i, t_cmd *cmd)
-{
-	static int	flag_single = 0;
-	static int	flag_double = 0;
-
-	if (content[*i] == '\'' && !flag_double)
-	{
-		flag_single = !flag_single;
-		return (append_char(expanded, content[(*i)++]));
-	}
-	else if (content[*i] == '"' && !flag_single)
-	{
-		flag_double = !flag_double;
-		return (append_char(expanded, content[(*i)++]));
-	}
-	else if (content[*i] == '$' && !flag_single)
-		return (append_expansion(expanded, content, i, cmd));
-	else
-		return (append_char(expanded, content[(*i)++]));
-}
-
-char	*expander_input(t_cmd **cmd)
-{
-	char	*expanded;
-	char	*content;
-	int		i;
-
-	expanded = ft_strdup("");
-	if (!expanded)
-		return (NULL);
-	i = 0;
-	content = (char *)(*cmd)->word->content;
-	while (content[i])
-	{
-		if (handle_quotes_and_expand(&expanded, content, &i, *cmd) < 0)
-		{
-			free(expanded);
-			return (NULL);
-		}
-	}
-	return (expanded);
+    char *expanded = ft_strdup("");
+    char *expand_var;
+    char *temp;
+    char c[2];
+    int i;
+    int flag_single = 0;
+    int flag_double = 0;
+    i = 0;
+    while (input[i])
+    {
+        if (input[i] == '\'' && !flag_double)
+        {
+            flag_single = !flag_single;
+            i++;
+        }
+        else if (input[i] == '\"' && !flag_single)
+        {
+            flag_double = !flag_double;
+            i++;
+        }
+        else if (input[i] == '$' && !flag_single)
+        {
+            expand_var = expantions(input, &i, env);
+            temp = ft_strjoin(expanded, expand_var);
+            free(expanded);
+            free(expand_var);
+            expanded = temp;
+        }
+        else 
+        {
+            c[0] = input[i];
+            c[1] = '\0';
+            temp = ft_strjoin(expanded, c);
+            free(expanded);
+            expanded = temp;
+            i++;
+        }
+    }
+    return (expanded);
 }
